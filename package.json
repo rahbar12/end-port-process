@@ -7,6 +7,16 @@
     "type": "git",
     "url": "https://github.com/rahbar12/end-port-process.git"
   },
+  "keywords": [
+    "port",
+    "process",
+    "kill",
+    "kill-port",
+    "port-kill",
+    "end-port-process",
+    "terminate",
+    "terminate-port"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

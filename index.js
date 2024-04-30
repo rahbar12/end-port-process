@@ -19,7 +19,7 @@ const portKill = async (...ports) => {
                 await taskKill(pid);
             }
             else {
-                const fuser = await checkCommand('fuser');
+                const fuser = await checkCommand('fuser -V');
                 if (fuser) await fuserKill(port);
                 else {
                     let pid;

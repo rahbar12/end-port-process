@@ -1,6 +1,6 @@
 {
-  "name": "port-kill",
-  "version": "1.0.0",
+  "name": "end-port-process",
+  "version": "1.0.2",
   "description": "",
   "main": "index.js",
   "scripts": {

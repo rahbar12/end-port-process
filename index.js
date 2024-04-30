@@ -15,7 +15,7 @@ const portKill = async (...ports) => {
     for (const port of ports) {
         try {
             if (platform === 'Windows_NT') {
-                const pid = await getPID_netstat(port, platform);
+                const pid = await getPID_netstat_win(port);
                 await taskKill(pid);
             }
             else {
@@ -23,9 +23,9 @@ const portKill = async (...ports) => {
                 if (fuser) await fuserKill(port);
                 else {
                     let pid;
-                    const lsof = await checkCommand('lsof --help');
+                    const lsof = await checkCommand('lsof -v');
                     if (lsof) pid = await getPID_lsof(port);
-                    else pid = await getPID_netstat(port, platform);
+                    else pid = await getPID_netstat_linux(port);
                     await killProcess(pid);
                 }
             }
@@ -73,25 +73,39 @@ const fuserKill = (port) => {
 
 const getPID_lsof = (port) => {
     return new Promise((resolve, reject) => {
-        const command = exec(`lsof -t -i:${port}`, (error, stdout, stderr) => {
+        exec(`lsof -t -i:${port}`, (error, stdout, stderr) => {
             if (error) {
                 if (error.message.includes('No such file or directory')) reject(new PortError(`Port:${port} is not busy`));
                 else reject(error);
             } else {
-                return stdout.trim();
+                return resolve(stdout.trim());
             }
         });
     });
 }
 
-const getPID_netstat = (port, platform) => {
+const getPID_netstat_win = (port) => {
     return new Promise((resolve, reject) => {
-        const command = exec(`netstat -ano | ${platform === "Windows_NT" ? "findstr" : "grep"} :${port} | findstr LISTENING`, (error, stdout, stderr) => {
+        exec(`netstat -ano | findstr :${port} | findstr LISTENING`, (error, stdout, stderr) => {
             if (error || !stdout) {
                 if (error.message.includes('No such file or directory')) reject(new PortError(`Port:${port} is not busy`));
                 else reject(error);
             } else {
                 return resolve(stdout.trim().split(" ").pop());
+            }
+        });
+    });
+}
+
+
+const getPID_netstat_linux = (port) => {
+    return new Promise((resolve, reject) => {
+        exec(`netstat -plten | grep :${port} | grep LISTEN`, (error, stdout, stderr) => {
+            if (error || !stdout) {
+                if (error.message.includes('No such file or directory')) reject(new PortError(`Port:${port} is not busy`));
+                else reject(error);
+            } else {
+                return resolve(stdout.trim().split(" ").pop().split("/")[0]);
             }
         });
     });
